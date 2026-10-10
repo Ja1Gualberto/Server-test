@@ -319,6 +319,29 @@ cmd_setup() {
         ./playit-claim.sh
     fi
 
+    # 5. Inicialização Automática no Boot (Autostart)
+    echo -e "\n${C_BOLD}🔌 Inicialização Automática (Servidor Dedicado):${C_RESET}"
+    if systemctl is-enabled docker >/dev/null 2>&1; then
+        echo -e "  ${C_GREEN}✔ Docker configurado para iniciar automaticamente no boot.${C_RESET}"
+        echo -e "  ${C_GREEN}✔ Contêineres configurados com restart=always (sobem sozinhos ao ligar o PC).${C_RESET}"
+    else
+        echo -e "  ${C_YELLOW}⚠ Habilitando Docker no boot do sistema...${C_RESET}"
+        sudo systemctl enable docker
+    fi
+
+    if [ "$1" = "autostart" ]; then
+        echo -e "  ${C_CYAN}Instalando macacsv.service no systemd...${C_RESET}"
+        sudo cp "$DIR/macacsv.service" /etc/systemd/system/
+        sudo systemctl daemon-reload
+        sudo systemctl enable macacsv.service
+        echo -e "  ${C_GREEN}✔ macacsv.service ativado com sucesso para ligar e desligar com o Linux!${C_RESET}"
+    elif [ -f "/etc/systemd/system/macacsv.service" ]; then
+        echo -e "  ${C_GREEN}✔ Serviço systemd macacsv.service instalado e ativo.${C_RESET}"
+    else
+        echo -e "  ${C_CYAN}ℹ Dica:${C_RESET} Para instalar o serviço systemd de parada graciosa no boot/shutdown:"
+        echo -e "    Execute: ${C_BOLD}./macacsv setup autostart${C_RESET}"
+    fi
+
     echo -e "\n${C_GREEN}✔ Ambiente pronto para uso!${C_RESET}"
 }
 
@@ -340,6 +363,7 @@ cmd_help() {
     echo -e "${C_BOLD}Atalhos Úteis:${C_RESET}"
     echo -e "  ${C_CYAN}./macacsv ip${C_RESET}          Atalho para './macacsv link'"
     echo -e "  ${C_CYAN}./macacsv ping${C_RESET}        Atalho para './macacsv check'"
+    echo -e "  ${C_CYAN}./macacsv autostart${C_RESET}   Atalho para './macacsv setup autostart'"
     echo ""
 }
 
@@ -360,6 +384,7 @@ case "$COMMAND" in
     console)            cmd_console "$@" ;;
     backup)             cmd_backup "$@" ;;
     setup)              cmd_setup "$@" ;;
+    autostart)          cmd_setup "autostart" ;;
     help|--help|-h)     cmd_help ;;
     *)
         echo -e "${C_RED}Comando desconhecido: '$COMMAND'${C_RESET}"

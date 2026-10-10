@@ -216,3 +216,33 @@ O arquivo de configuração fica localizado em:
     lockoutSeconds = 60          # Tempo de bloqueio em segundos
     language = "auto"           # Idioma automático ou "en"/"ru"
 ```
+
+---
+
+## ⚡ Modo Servidor Dedicado (Ligar na Energia & Autostart)
+
+Para que o computador funcione como um servidor autônomo (ligando sozinho ao receber energia e iniciando o Minecraft automaticamente sem precisar fazer login):
+
+### 1. Ligar Sozinho ao Receber Energia (BIOS Dell Inspiron)
+1. Reinicie o notebook e pressione repetidamente a tecla **F2** para abrir o setup da **BIOS**.
+2. No menu à esquerda, abra **Power Management**.
+3. Clique em **AC Recovery** e selecione **Power On**.
+4. *(Opcional)* Ative também **Wake on AC** se visível.
+5. Clique em **Apply** e depois **Exit**.
+> Agora, assim que a fonte de energia for conectada à tomada ou a luz voltar após uma queda de energia, o computador ligará sozinho.
+
+### 2. Iniciar o Servidor Automaticamente no Boot
+Os contêineres já estão configurados com política `restart: always` no [`docker-compose.yml`](docker-compose.yml).
+Para ativar o serviço do sistema com salvamento limpo no encerramento:
+```bash
+./macacsv setup autostart
+```
+
+### 3. Evitar Suspensão ao Fechar a Tampa do Notebook
+Para fechar a tela sem suspender o servidor:
+```bash
+sudo sed -i 's/#*HandleLidSwitch=.*/HandleLidSwitch=ignore/' /etc/systemd/logind.conf
+sudo sed -i 's/#*HandleLidSwitchExternalPower=.*/HandleLidSwitchExternalPower=ignore/' /etc/systemd/logind.conf
+sudo systemctl restart systemd-logind
+```
+

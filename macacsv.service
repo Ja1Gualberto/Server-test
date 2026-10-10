@@ -1,0 +1,18 @@
+[Unit]
+Description=MacacSv Minecraft & Playit Server Service
+After=docker.service network-online.target
+Requires=docker.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/home/server/Documentos/Server-test
+User=server
+Group=server
+ExecStart=/home/server/Documentos/Server-test/macacsv.sh start
+ExecStop=/home/server/Documentos/Server-test/macacsv.sh stop
+TimeoutStopSec=90
+
+[Install]
+WantedBy=multi-user.target

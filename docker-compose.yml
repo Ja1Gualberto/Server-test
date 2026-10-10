@@ -2,7 +2,7 @@ services:
   minecraft:
     image: itzg/minecraft-server:java17
     container_name: mc-otherworld
-    restart: unless-stopped
+    restart: always
     stop_grace_period: 60s
     ports:
       - "25565:25565"
@@ -19,6 +19,7 @@ services:
       MAX_PLAYERS: "20"
       VIEW_DISTANCE: "10"
       SIMULATION_DISTANCE: "6"
+      SERVER_HOST: "127.0.0.1"
       CREATE_CONSOLE_IN_PIPE: "true"
     volumes:
       - ./data:/data
@@ -28,7 +29,7 @@ services:
   playit:
     image: ghcr.io/playit-cloud/playit-agent:latest
     container_name: mc-playit
-    restart: unless-stopped
+    restart: always
     network_mode: "host"
     environment:
       - SECRET_KEY=${PLAYIT_SECRET_KEY:-}
