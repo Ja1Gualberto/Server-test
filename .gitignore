@@ -1,0 +1,7 @@
+# Minecraft and runtime server data
+data/
+playit_data/
+.env
+
+# Temporary binaries
+playit-bin
