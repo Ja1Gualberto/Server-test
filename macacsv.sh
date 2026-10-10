@@ -91,7 +91,11 @@ cmd_restart() {
     print_banner
     echo -e "${C_YELLOW}🔄 Reiniciando containers...${C_RESET}"
     docker compose restart
-    echo -e "\n${C_GREEN}✔ Reinicialização concluída!${C_RESET}"
+    echo -e "\n${C_GREEN}✔ Containers reiniciados com sucesso!${C_RESET}"
+    echo -e "${C_YELLOW}⏳ ATENÇÃO:${C_RESET} O Forge está recarregando os 356 mods."
+    echo -e "   O carregamento leva em média ${C_BOLD}3 a 4 minutos${C_RESET}."
+    echo -e "   Até o Forge finalizar, jogadores verão a mensagem 'Can't connect to server'."
+    echo -e "\n${C_CYAN}Acompanhe com:${C_RESET} ${C_BOLD}./macacsv logs${C_RESET} (ou teste com ${C_BOLD}./macacsv check${C_RESET})"
 }
 
 cmd_status() {
