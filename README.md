@@ -89,44 +89,36 @@ Server-test/
 2. **Persistência de Dados**:
    - Tudo o que acontece dentro do jogo é gravado na pasta `./data` da sua máquina host. Mesmo se o container for recriado, atualizado ou excluído, nenhum progresso do mapa, itens ou baús é perdido.
 
-3. **Modo Offline & LTS Auth**:
+3. **Modo Offline & AuthMod**:
    - O servidor opera com `online-mode=false` para que amigos com qualquer launcher possam jogar juntos.
-   - Para impedir que alguém use o nickname de outro jogador ou de um administrador, o mod **LTS Auth** intercepta a conexão e congela o jogador até que ele forneça sua senha registrada.
+   - Para impedir roubo de contas ou privilégios de administrador, o **AuthMod** congela o jogador em modo espectador até que ele forneça sua senha registrada.
 
 ---
 
-## 🚀 Como Rodar o Servidor
+## 🚀 Como Rodar e Gerenciar (Wrapper MacacSv)
 
-### Iniciar
+O projeto conta com o wrapper executável [`./macacsv.sh`](macacsv.sh) (ou simplesmente `./macacsv`) com os 10 comandos essenciais:
+
 ```bash
-./start.sh
-```
-Inicia ambos os serviços em segundo plano.
-
-### Ver Logs (Console em tempo real)
-```bash
-./logs.sh
-```
-*Dica: Pressione `Ctrl + C` para sair do monitoramento sem desligar o servidor.*
-
-### Enviar Comandos para o Console
-```bash
-# Dar permissão de Admin (OP)
-./console.sh "op SeuNick"
-
-# Ver jogadores conectados
-./console.sh "list"
-
-# Mudar clima ou horário
-./console.sh "weather clear"
-./console.sh "time set day"
+./macacsv.sh <comando>
 ```
 
-### Parar o Servidor
-```bash
-./stop.sh
-```
-*O Docker Compose concede até 60 segundos de tolerância (`stop_grace_period: 60s`) para o Forge salvar todos os chunks e descarregar o mundo sem risco de corrupção.*
+| # | Comando | Atalho | Descrição |
+| :-: | :--- | :--- | :--- |
+| 1 | `./macacsv.sh start` | - | Inicia o Minecraft e o Playit em segundo plano. |
+| 2 | `./macacsv.sh stop` | - | Para os containers salvando todos os chunks com segurança. |
+| 3 | `./macacsv.sh restart` | - | Reinicia ambos os serviços. |
+| 4 | `./macacsv.sh status` | - | Exibe saúde dos containers, portas, consumo de RAM e CPU. |
+| 5 | `./macacsv.sh check` | `./macacsv ping` | **Diagnóstico completo**: testa porta TCP 25565, latência, RCON e se o Forge está travado. |
+| 6 | `./macacsv.sh link` | `./macacsv ip` | **Endereço do Servidor**: exibe o domínio público para amigos e local para você. |
+| 7 | `./macacsv.sh logs` | - | Acompanha logs do Minecraft ao vivo (`logs playit` para o túnel). |
+| 8 | `./macacsv.sh console <cmd>` | - | Envia comandos ao console (ex: `./macacsv console "op SeuNick"`). |
+| 9 | `./macacsv.sh backup` | - | Gera um arquivo compactado `.tar.gz` do mundo com data/hora em `backups/`. |
+| 10 | `./macacsv.sh setup` | - | Valida e instala dependências de sistema (Docker, grupo, túnel). |
+
+> [!TIP]
+> Você pode alterar entre as **3 opções de arte ASCII** do banner no topo editando a variável `BANNER_STYLE=1` (1, 2 ou 3) na linha 10 do [`macacsv.sh`](macacsv.sh).
+
 
 ---
 
@@ -192,12 +184,35 @@ docker compose up -d
 
 ---
 
-## 🔐 Segurança & Login (LTS Auth)
+## 🔐 Segurança & Login (AuthMod)
 
+O servidor utiliza o **AuthMod (ForgeGuardAuth)** para proteger contas com criptografia PBKDF2:
+
+- **Trava Total**: Ao entrar, o jogador fica congelado em modo Espectador (não anda, não pula, não quebra blocos, não abre baús e não toma dano).
+- **Sem Kick por Tempo**: O jogador não é expulso por demorar para digitar a senha.
+- **Proteção contra Força Bruta**: Bloqueio temporário se errar a senha repetidamente.
+
+### Comandos para Jogadores:
 | Comando | Descrição |
 | :--- | :--- |
-| `/register <senha> <senha>` | Cadastra a senha na primeira vez que o jogador entra. |
+| `/register <senha>` | Cadastra a senha na primeira vez que o jogador entra. |
 | `/login <senha>` | Autentica o jogador nas próximas sessões. |
-| `/changepassword <antiga> <nova>` | Permite ao jogador alterar sua própria senha. |
+| `/changepassword <antiga> <nova>` | Altera a própria senha. |
 
-*Configurações avançadas do mod podem ser ajustadas em `data/config/lts_auth.json` (tempo de timeout de login, restrição de movimentação, etc.).*
+### Comandos Administrativos (Console ou OP):
+| Comando | Descrição |
+| :--- | :--- |
+| `./console.sh "authmod changepassword <jogador> <novaSenha>"` | Redefine a senha de um jogador (mesmo offline). |
+| `./console.sh "authmod resetpassword <jogador>"` | Deleta o registro do jogador para que ele cadastre uma nova. |
+
+### Configuração do Mod:
+O arquivo de configuração fica localizado em:
+`data/world/serverconfig/authmod-server.toml`
+
+```toml
+[auth]
+    minPasswordLength = 6        # Tamanho mínimo da senha (4 a 64)
+    maxLoginAttempts = 3         # Tentativas antes de bloquear temporariamente
+    lockoutSeconds = 60          # Tempo de bloqueio em segundos
+    language = "auto"           # Idioma automático ou "en"/"ru"
+```

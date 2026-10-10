@@ -3,5 +3,6 @@ data/
 playit_data/
 .env
 
-# Temporary binaries
+# Temporary binaries and backups
 playit-bin
+backups/
